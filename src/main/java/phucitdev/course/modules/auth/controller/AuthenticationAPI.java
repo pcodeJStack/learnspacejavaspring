@@ -33,18 +33,18 @@ public class AuthenticationAPI {
         RefreshTokenResponse refreshTokenResponse = authService.refreshToken(refreshTokenRequest);
         return ResponseEntity.ok(refreshTokenResponse);
     }
-    @PostMapping("logout")
-    public ResponseEntity logout(@RequestBody LogoutRequest LogoutRequest ) {
-        if (LogoutRequest == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("message", "Refresh token missing"));
-        }
-        if(LogoutRequest != null){
-            authService.logoutOfSystem(LogoutRequest);
-        }
-
-        Map<String, Object> res = new LinkedHashMap<>();
-        res.put("message", "Logout successfully");
-        return ResponseEntity.ok(res);
-    }
+//    @PostMapping("logout")
+//    public ResponseEntity logout(@RequestBody LogoutRequest LogoutRequest ) {
+//        if (LogoutRequest == null) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+//                    .body(Map.of("message", "Refresh token missing"));
+//        }
+//        if(LogoutRequest != null){
+//            authService.logoutOfSystem(LogoutRequest);
+//        }
+//
+//        Map<String, Object> res = new LinkedHashMap<>();
+//        res.put("message", "Logout successfully");
+//        return ResponseEntity.ok(res);
+//    }
 }
