@@ -15,7 +15,7 @@ public class RefreshTokenCleaner {
     public RefreshTokenCleaner(RefreshTokenRepository refreshTokenRepository) {
         this.refreshTokenRepository = refreshTokenRepository;
     }
-    @Scheduled(cron = "0 * * * * *")
+    @Scheduled(cron = "0 0 */2 * * *")
     public void cleanTokens() {
         int totalDeleted = 0;
         while (true) {
