@@ -52,4 +52,14 @@ public class ClasseroomsAPI {
         List<ClassResponse> response = classService.getMyClasses();
         return ResponseEntity.ok().body(response);
     }
+    @PutMapping("class/{classroomId}")
+    public ResponseEntity<?> updateClassroom(@Valid @RequestBody UpdateClassroomRequest updateClassroomRequest, @PathVariable UUID classroomId) {
+        UpdateClassroomResponse response = classService.updateClassroom(updateClassroomRequest, classroomId);
+        return ResponseEntity.ok(response);
+    }
+    @DeleteMapping("class/{classroomId}")
+    public ResponseEntity<?> deleteClassroom(@PathVariable UUID classroomId) {
+        DeleteClassroomResponse response = classService.deleteClassroom(classroomId);
+        return ResponseEntity.ok().body(response);
+    }
 }

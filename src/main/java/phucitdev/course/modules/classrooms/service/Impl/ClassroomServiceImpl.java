@@ -7,6 +7,7 @@ import phucitdev.course.commo.exception.auth.AlreadyExistsException;
 import phucitdev.course.commo.exception.auth.BadRequestException;
 import phucitdev.course.commo.exception.auth.ForbiddenException;
 import phucitdev.course.commo.exception.classroom.NotFoundException;
+import phucitdev.course.commo.exception.material.DuplicationException;
 import phucitdev.course.modules.auth.entity.Account;
 import phucitdev.course.modules.auth.entity.Role;
 import phucitdev.course.modules.auth.security.SecurityUtils;
@@ -45,6 +46,12 @@ public class ClassroomServiceImpl implements ClassroomService {
                 .isAfter(createClassRequest.getEndDate())) {
             throw new BadRequestException(
                     "Ngày bắt đầu phải nhỏ hơn hoặc bằng ngày kết thúc"
+            );
+        }
+        boolean existed = classroomRepository.existsByNameIgnoreCaseAndIsDeletedFalse(createClassRequest.getName().trim());
+        if (existed) {
+            throw new DuplicationException(
+                    "Tên lớp học đã tồn tại"
             );
         }
         Classroom classroom = new Classroom();
@@ -178,12 +185,49 @@ public class ClassroomServiceImpl implements ClassroomService {
                                     )
                             )
                             .toList();
-
             item.setSchedules(schedules);
         }
         return classes;
     }
 
+    @Override
+    public UpdateClassroomResponse updateClassroom(UpdateClassroomRequest updateClassroomRequest, UUID classroomId) {
+        Classroom classroom = classroomRepository.findById(classroomId)
+                        .orElseThrow(() ->
+                                new NotFoundException("Không tìm thấy lớp học"));
+        if (updateClassroomRequest.getStartDate()
+                .isAfter(updateClassroomRequest.getEndDate())) {
+            throw new BadRequestException(
+                    "Ngày bắt đầu phải nhỏ hơn hoặc bằng ngày kết thúc"
+            );
+        }
+        classroom.setName(updateClassroomRequest.getName());
+        classroom.setDescription(updateClassroomRequest.getDescription());
+        classroom.setStatus(updateClassroomRequest.getStatus());
+        classroom.setStartDate(updateClassroomRequest.getStartDate());
+        classroom.setEndDate(updateClassroomRequest.getEndDate());
+        classroomRepository.save(classroom);
+        return new UpdateClassroomResponse("Cập nhật thành công!");
+    }
+
+    @Override
+    public DeleteClassroomResponse deleteClassroom(UUID classroomId) {
+        Classroom classroom = classroomRepository.findById(classroomId)
+                .orElseThrow(() ->
+                        new NotFoundException("Không tìm thấy lớp học"));
+        validateDelete(classroom);
+        classroom.setIsDeleted(true);
+        classroomRepository.save(classroom);
+        return  new DeleteClassroomResponse("Xoá thành công!");
+    }
+    private void validateDelete(Classroom classroom) {
+        if (classroom.getStatus() == ClassroomStatus.ACTIVE) {
+            throw new BadRequestException(
+                    "Không thể xóa lớp học đang hoạt động"
+            );
+        }
+
+    }
     private String generateClassCode() {
         return UUID.randomUUID()
                 .toString()

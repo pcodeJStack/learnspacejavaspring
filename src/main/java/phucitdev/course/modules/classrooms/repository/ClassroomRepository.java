@@ -25,7 +25,8 @@ public interface ClassroomRepository extends JpaRepository<Classroom, UUID> {
         c.totalStudent
     )
     FROM Classroom c
-    WHERE
+    WHERE c.isDeleted = false
+    AND
         (:teacherId IS NULL 
             OR c.teacherProfile.id = :teacherId)
     AND
@@ -61,9 +62,14 @@ public interface ClassroomRepository extends JpaRepository<Classroom, UUID> {
     LEFT JOIN c.teacherProfile t
     LEFT JOIN t.account a
     WHERE sp.id = :studentId
+    
     ORDER BY c.createdAt DESC
 """)
     List<ClassResponse> getMyClasses(
             @Param("studentId") UUID studentId
+    );
+
+    boolean existsByNameIgnoreCaseAndIsDeletedFalse(
+            String name
     );
 }
