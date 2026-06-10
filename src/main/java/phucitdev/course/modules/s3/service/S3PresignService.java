@@ -24,49 +24,65 @@ public class S3PresignService {
 
     @Value("${aws.bucket-name}")
     private String bucket;
-    @Value("${aws.region}")
-    private String region;
+
+    private static final Duration UPLOAD_EXPIRE =
+            Duration.ofHours(1);
+
+    private static final Duration VIEW_EXPIRE =
+            Duration.ofHours(6);
+
     public PresignResponse generatePresignedUrl(PresignRequest req) {
 
-        String fileName = UUID.randomUUID() + getExtension(req.getFileName());
-        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                .bucket(bucket)
-                .key(fileName)
-                .contentType(req.getFileType())
-                .build();
+        String fileName =
+                UUID.randomUUID() +
+                        getExtension(req.getFileName());
 
-        PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(10))
-                .putObjectRequest(putObjectRequest)
-                .build();
+        PutObjectRequest putObjectRequest =
+                PutObjectRequest.builder()
+                        .bucket(bucket)
+                        .key(fileName)
+                        .contentType(req.getFileType())
+                        .build();
+
+        PutObjectPresignRequest presignRequest =
+                PutObjectPresignRequest.builder()
+                        .signatureDuration(UPLOAD_EXPIRE)
+                        .putObjectRequest(putObjectRequest)
+                        .build();
 
         PresignedPutObjectRequest presignedRequest =
                 s3Presigner.presignPutObject(presignRequest);
 
         return new PresignResponse(
                 presignedRequest.url().toString(),
-                fileName // CHỈ TRẢ KEY
+                fileName
         );
     }
-    private String getExtension(String fileName) {
-        int dotIndex = fileName.lastIndexOf(".");
-        return dotIndex > 0 ? fileName.substring(dotIndex) : "";
-    }
+
     public String generatePresignedGetUrl(String fileKey) {
 
-        GetObjectRequest getObjectRequest = GetObjectRequest.builder()
-                .bucket(bucket)
-                .key(fileKey)
-                .build();
+        GetObjectRequest getObjectRequest =
+                GetObjectRequest.builder()
+                        .bucket(bucket)
+                        .key(fileKey)
+                        .build();
 
-        GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(10))
-                .getObjectRequest(getObjectRequest)
-                .build();
+        GetObjectPresignRequest presignRequest =
+                GetObjectPresignRequest.builder()
+                        .signatureDuration(VIEW_EXPIRE)
+                        .getObjectRequest(getObjectRequest)
+                        .build();
 
         PresignedGetObjectRequest presignedRequest =
                 s3Presigner.presignGetObject(presignRequest);
 
         return presignedRequest.url().toString();
+    }
+
+    private String getExtension(String fileName) {
+        int dotIndex = fileName.lastIndexOf(".");
+        return dotIndex > 0
+                ? fileName.substring(dotIndex)
+                : "";
     }
 }
