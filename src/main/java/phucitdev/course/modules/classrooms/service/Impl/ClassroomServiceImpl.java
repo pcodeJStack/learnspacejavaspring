@@ -3,6 +3,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import phucitdev.course.commo.exception.auth.AlreadyExistsException;
 import phucitdev.course.commo.exception.auth.BadRequestException;
 import phucitdev.course.commo.exception.auth.ForbiddenException;
@@ -19,6 +20,7 @@ import phucitdev.course.modules.classrooms.dto.assign.MaterialAssignmentItem;
 import phucitdev.course.modules.classrooms.dto.assign_teacher.*;
 import phucitdev.course.modules.classrooms.dto.classes_teachers.ClassroomSnapMaterialResponse;
 import phucitdev.course.modules.classrooms.dto.classes_teachers.GetClassroomWithTeacherResponse;
+import phucitdev.course.modules.classrooms.dto.students_of_classrooms.ClassroomStudentResponse;
 import phucitdev.course.modules.classrooms.dto.teacher_response.TeacherClassroomResponse;
 import phucitdev.course.modules.classrooms.entity.Classroom;
 import phucitdev.course.modules.classrooms.entity.ClassroomStatus;
@@ -513,6 +515,47 @@ public class ClassroomServiceImpl implements ClassroomService {
                 })
                 .toList();
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ClassroomStudentResponse> getStudentsByClassroom(
+            UUID classroomId,
+            Pageable pageable,
+            String keyword
+    ) {
+
+        // check classroom tồn tại
+        classroomRepository.findById(classroomId)
+                .orElseThrow(() ->
+                        new NotFoundException(
+                                "Không tìm thấy lớp học"
+                        ));
+
+        Page<StudentProfile> students =
+                studentProfileRepository
+                        .findStudentsByClassroom(
+                                classroomId,
+                                keyword,
+                                pageable
+                        );
+
+        return students.map(student -> {
+
+            Account account = student.getAccount();
+
+            return new ClassroomStudentResponse(
+                    student.getId(),
+                    account.getId(),
+                    account.getFullName(),
+                    account.getRole(),
+                    account.getIsActive(),
+                    account.getEmail(),
+                    student.getAvatar(),
+                    student.getAddress()
+            );
+        });
+    }
+
 
     private void validateDelete(Classroom classroom) {
         if (classroom.getStatus() == ClassroomStatus.ACTIVE) {

@@ -126,4 +126,26 @@ public class ClassroomsAPI {
         return ResponseEntity.ok(classService.getSnapMaterialsByClassroom(classroomId)
         );
     }
+    @GetMapping("class/{classroomId}/students")
+    public ResponseEntity<?> getStudentsByClassroom(
+            @PathVariable UUID classroomId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String keyword
+    ) {
+
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by("createdAt").descending()
+        );
+
+        return ResponseEntity.ok(
+                classService.getStudentsByClassroom(
+                        classroomId,
+                        pageable,
+                        keyword
+                )
+        );
+    }
 }

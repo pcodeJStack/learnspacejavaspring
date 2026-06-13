@@ -3,6 +3,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import phucitdev.course.modules.auth.entity.Account;
 import phucitdev.course.modules.teacherProfile.entity.TeacherProfile;
 import java.util.Optional;
 import java.util.UUID;
@@ -22,5 +23,7 @@ public interface TeacherProfileRepository extends JpaRepository<TeacherProfile, 
             """)
     Page<TeacherProfile> getAllTeacher(String keyword, Pageable pageable);
     Optional<TeacherProfile> findByIdAndIsDeletedFalse(UUID id);
-
+    Optional<TeacherProfile> findByAccount(
+            Account account
+    );
 }

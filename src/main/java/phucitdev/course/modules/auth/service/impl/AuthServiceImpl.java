@@ -1,12 +1,16 @@
 package phucitdev.course.modules.auth.service.impl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import phucitdev.course.commo.exception.auth.*;
+import phucitdev.course.commo.exception.classroom.NotFoundException;
 import phucitdev.course.modules.auth.dto.*;
 import phucitdev.course.modules.auth.entity.Account;
 import phucitdev.course.modules.auth.entity.RefreshToken;
@@ -22,6 +26,7 @@ import phucitdev.course.modules.teacherProfile.entity.TeacherProfile;
 import phucitdev.course.modules.teacherProfile.repository.TeacherProfileRepository;
 
 import java.util.Date;
+import java.util.UUID;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -84,11 +89,13 @@ public class AuthServiceImpl implements AuthService {
             );
             CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
             Account account = userDetails.getAccount();
+
+            if (Boolean.FALSE.equals(account.getIsActive())) {
+                throw new ForbiddenException("Tài khoản của bạn đã bị khóa");
+            }
             Role requestRole = Role.from(request.getRole());
             if (!account.getRole().equals(requestRole)) {
-                throw new ForbiddenException(
-                        "Bạn không thể đăng nhập với vai trò này"
-                );
+                throw new ForbiddenException("Bạn không thể đăng nhập với vai trò này");
             }
             String accessToken = jwtTokenProvider.generateAccessToken(account.getId(), account.getEmail());
             String refreshToken = jwtTokenProvider.generateRefreshToken(account, request.getDeviceId(), request.getDeviceInfo());
@@ -139,5 +146,70 @@ public class AuthServiceImpl implements AuthService {
         refreshTokenInDB.setRevoked(true);
         refreshTokenRepository.save(refreshTokenInDB);
     }
+    @Override
+    @Transactional
+    public BlockAccountResponse blockAccount(UUID accountId, BlockAccountRequest request) {
+        try {
+            Account account = authRepository.findById(accountId).orElseThrow(() ->
+                            new NotFoundException(
+                                    "Không tìm thấy tài khoản"
+                            ));
+            switch (request.getType()) {
+                case BLOCK -> {
 
+                    if (!account.getIsActive()) {
+                        throw new BadRequestException(
+                                "Tài khoản đã bị chặn trước đó"
+                        );
+                    }
+                    account.setIsActive(false);
+                }
+                case UNBLOCK -> {
+                    if (account.getIsActive()) {
+                        throw new BadRequestException(
+                                "Tài khoản đang hoạt động"
+                        );
+                    }
+
+                    account.setIsActive(true);
+                }
+            }
+
+            authRepository.save(account);
+
+            return new BlockAccountResponse(
+                    request.getType().name()
+                            .equals("BLOCK")
+                            ? "Chặn tài khoản thành công!"
+                            : "Mở chặn tài khoản thành công!"
+            );
+
+        } catch (Exception e) {
+            throw new BadRequestException(
+                    e.getMessage()
+            );
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<AccountResponse> getAccounts(Pageable pageable, String keyword, Role role) {
+        try {
+            Page<Account> accounts = authRepository.findAccounts(keyword, role, pageable);
+            return accounts.map(account ->
+                    new AccountResponse(
+                            account.getId(),
+                            account.getFullName(),
+                            account.getEmail(),
+                            account.getRole(),
+                            account.getIsActive()
+                    )
+            );
+
+        } catch (Exception e) {
+            throw new BadRequestException(
+                    "Lỗi khi lấy danh sách tài khoản"
+            );
+        }
+    }
 }

@@ -1,14 +1,10 @@
 package phucitdev.course.modules.auth.security;
-
 import org.jspecify.annotations.Nullable;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import phucitdev.course.modules.auth.entity.Account;
-
 import java.util.Collection;
 import java.util.List;
-
 public class CustomUserDetails implements UserDetails {
     private final Account account;
     public CustomUserDetails(Account account){

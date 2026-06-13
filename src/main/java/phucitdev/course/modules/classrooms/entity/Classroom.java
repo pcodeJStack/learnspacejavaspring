@@ -59,7 +59,8 @@ public class Classroom extends BaseEntity {
     )
     private List<StudentProfile> studentProfiles;
 
-
     @OneToMany(mappedBy = "classroom", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SnapClassroomMaterial> snapClassroomMaterials = new ArrayList<>();
+
+
 }

@@ -8,6 +8,7 @@ import phucitdev.course.modules.classrooms.dto.assign.AssignMaterialsResponse;
 import phucitdev.course.modules.classrooms.dto.assign_teacher.*;
 import phucitdev.course.modules.classrooms.dto.classes_teachers.ClassroomSnapMaterialResponse;
 import phucitdev.course.modules.classrooms.dto.classes_teachers.GetClassroomWithTeacherResponse;
+import phucitdev.course.modules.classrooms.dto.students_of_classrooms.ClassroomStudentResponse;
 import phucitdev.course.modules.classrooms.dto.teacher_response.TeacherClassroomResponse;
 
 import java.util.List;
@@ -27,4 +28,5 @@ public interface ClassroomService {
     RemoveTeacherFromClassroomResponse removeTeacherFromClassroom(UUID classroomId);
     List<TeacherClassroomResponse> getClassroomsByTeacher();
     List<ClassroomSnapMaterialResponse> getSnapMaterialsByClassroom(UUID classroomId);
+    Page<ClassroomStudentResponse> getStudentsByClassroom(UUID classroomId, Pageable pageable, String keyword);
 }
