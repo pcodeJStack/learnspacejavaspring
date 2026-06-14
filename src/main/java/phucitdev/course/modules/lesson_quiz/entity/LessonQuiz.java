@@ -21,10 +21,16 @@ public class LessonQuiz extends BaseEntity {
     private String description;
     private Integer durationMinutes;
     private Integer passScore;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private QuizType quizType;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "snap_lesson_id", nullable = false)
     private SnapLesson snapLesson;
 
     @OneToMany(mappedBy = "quiz", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<QuizQuestion> questions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "lessonQuiz")
+    private List<StudentQuizSubmission> submissions = new ArrayList<>();
 }

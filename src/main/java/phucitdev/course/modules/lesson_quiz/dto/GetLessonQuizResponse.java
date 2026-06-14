@@ -1,17 +1,20 @@
 package phucitdev.course.modules.lesson_quiz.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
+import java.util.List;
 import java.util.UUID;
-@Data
-@AllArgsConstructor
+
+@Getter
+@Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class GetLessonQuizResponse {
-    private UUID id;
+    private UUID quizId;
     private String title;
     private String description;
     private Integer durationMinutes;
     private Integer passScore;
+    private String quizType;
+    private List<QuestionResponse> questions;
 }

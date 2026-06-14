@@ -8,7 +8,9 @@ import lombok.Setter;
 import phucitdev.course.commo.base.BaseEntity;
 import phucitdev.course.modules.auth.entity.Account;
 import phucitdev.course.modules.classrooms.entity.Classroom;
+import phucitdev.course.modules.lesson_quiz.entity.StudentQuizSubmission;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -24,4 +26,8 @@ public class StudentProfile extends BaseEntity {
     private String avatar;
     @ManyToMany(mappedBy = "studentProfiles")
     private List<Classroom> classrooms;
+
+
+    @OneToMany(mappedBy = "student")
+    private List<StudentQuizSubmission> submissions = new ArrayList<>();
 }

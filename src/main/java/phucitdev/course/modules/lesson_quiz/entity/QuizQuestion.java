@@ -20,9 +20,14 @@ public class QuizQuestion extends BaseEntity {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
     private Integer points = 1;
+    // chỉ dùng cho tự luận
+    @Column(columnDefinition = "TEXT")
+    private String essayAnswer;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "quiz_id", nullable = false)
     private LessonQuiz quiz;
+
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<QuestionOption> options = new ArrayList<>();
 }
