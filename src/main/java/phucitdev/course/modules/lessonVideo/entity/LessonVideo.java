@@ -23,4 +23,8 @@ public class LessonVideo extends BaseEntity {
     @JoinColumn(name = "snap_lesson_id", nullable = false)
     private SnapLesson snapLesson;
     private String fileKey;
+    @Enumerated(EnumType.STRING)
+
+    @Column(nullable = false)
+    private VideoType videoType;
 }

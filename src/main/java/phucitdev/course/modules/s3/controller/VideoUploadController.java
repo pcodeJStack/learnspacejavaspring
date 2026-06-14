@@ -5,12 +5,15 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import phucitdev.course.modules.lessonVideo.entity.VideoType;
 import phucitdev.course.modules.lessonVideo.repository.LessonVideoRepository;
+import phucitdev.course.modules.lessonVideo.service.LessonVideoService;
 import phucitdev.course.modules.s3.dto.PresignRequest;
 import phucitdev.course.modules.s3.dto.PresignResponse;
 import phucitdev.course.modules.s3.service.S3PresignService;
 import phucitdev.course.modules.s3.service.S3Service;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -18,6 +21,8 @@ import java.util.UUID;
 @RequestMapping("/api/videos")
 @RequiredArgsConstructor
 public class VideoUploadController {
+    @Autowired
+    LessonVideoService lessonVideoService;
     @Autowired
     LessonVideoRepository lessonVideoRepository;
     private final S3Service s3Service;
@@ -32,11 +37,13 @@ public class VideoUploadController {
         return s3PresignService.generatePresignedUrl(req);
     }
     @GetMapping("/play/{snapLessonId}")
-    public Map<String, String> getVideo(@PathVariable UUID snapLessonId) {
-        // 1. lấy fileKey từ DB
-        String fileKey = lessonVideoRepository.findFileKey(snapLessonId);
-        // 2. generate signed URL
-        String url = s3PresignService.generatePresignedGetUrl(fileKey);
-        return Map.of("url", url);
+    public ResponseEntity<List<Map<String, String>>> getVideos(@PathVariable UUID snapLessonId, @RequestParam(required = false) VideoType type) {
+         List<Map<String, String>> videos =
+                lessonVideoService.getVideosUrl(
+                        snapLessonId,
+                        type
+                );
+
+        return ResponseEntity.ok(videos);
     }
 }

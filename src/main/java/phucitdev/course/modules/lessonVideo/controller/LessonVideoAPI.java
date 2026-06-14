@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import phucitdev.course.modules.lessonVideo.dto.CreateLessonVideoRequest;
 import phucitdev.course.modules.lessonVideo.dto.CreateLessonVideoResponse;
 import phucitdev.course.modules.lessonVideo.dto.GetLessonVideoResponse;
+import phucitdev.course.modules.lessonVideo.entity.VideoType;
 import phucitdev.course.modules.lessonVideo.service.LessonVideoService;
 
 import java.util.List;
@@ -25,10 +26,10 @@ public class LessonVideoAPI {
         CreateLessonVideoResponse createLessonVideoResponse = lessonVideoService.createLessonVideo(createLessonVideoRequest);
         return ResponseEntity.ok(createLessonVideoResponse);
     }
-    @GetMapping("/{snapLessonId}/lessonVideos")
-    public ResponseEntity<?> getLessonVideos(@PathVariable UUID snapLessonId){
-        List<GetLessonVideoResponse> response = lessonVideoService.getVideos(snapLessonId);
-        return ResponseEntity.ok(response);
-    }
+//    @GetMapping("/{snapLessonId}/lessonVideos")
+//    public ResponseEntity<?> getLessonVideos(@PathVariable UUID snapLessonId, @RequestParam(required = false) VideoType type){
+//        List<GetLessonVideoResponse> response = lessonVideoService.getVideos(snapLessonId, type);
+//        return ResponseEntity.ok(response);
+//    }
 
 }
