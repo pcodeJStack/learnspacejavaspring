@@ -34,7 +34,7 @@ public class LessonVideoServiceImpl implements LessonVideoService {
         lessonVideo.setSnapLesson(snapLesson);
         lessonVideo.setTitle(createLessonVideoRequest.getTitle());
         lessonVideo.setVideoType(createLessonVideoRequest.getVideoType());
-        lessonVideo.setVideoUrl("videoUrl");
+        lessonVideo.setVideoUrl("");
         lessonVideo.setFileKey(createLessonVideoRequest.getFileKey());
         lessonVideoRepository.save(lessonVideo);
         return new CreateLessonVideoResponse("LessonVideo đã tạo thành công!");

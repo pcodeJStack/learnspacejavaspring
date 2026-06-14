@@ -490,15 +490,36 @@ public class ClassroomServiceImpl implements ClassroomService {
                                     .map(lesson ->
                                             new ClassroomSnapMaterialResponse
                                                     .SnapLessonResponse(
+
                                                     lesson.getId(),
                                                     lesson.getSourceLessonId(),
                                                     lesson.getLessonOrder(),
                                                     lesson.getTitle(),
+
+                                                    // lesson videos
                                                     lesson.getLessonVideos()
                                                             .stream()
-                                                            .map(video -> new ClassroomSnapMaterialResponse.LessonVideoResponse(
-                                                                    video.getId()
-                                                            ))
+                                                            .map(video ->
+                                                                    new ClassroomSnapMaterialResponse
+                                                                            .LessonVideoResponse(
+                                                                            video.getId()
+                                                                    )
+                                                            )
+                                                            .toList(),
+
+                                                    // lesson quizzes
+                                                    lesson.getLessonQuizzes()
+                                                            .stream()
+                                                            .map(quiz ->
+                                                                    new ClassroomSnapMaterialResponse
+                                                                            .LessonQuizResponse(
+                                                                            quiz.getId(),
+                                                                            quiz.getTitle(),
+                                                                            quiz.getDescription(),
+                                                                            quiz.getDurationMinutes(),
+                                                                            quiz.getPassScore()
+                                                                    )
+                                                            )
                                                             .toList()
                                             )
                                     )

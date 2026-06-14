@@ -32,6 +32,8 @@ public class ClassroomSnapMaterialResponse {
         private String title;
         // thêm lesson videos
         private List<LessonVideoResponse> lessonVideos;
+        // lesson quizzes
+        private List<LessonQuizResponse> lessonQuizzes;
     }
     @Getter
     @Setter
@@ -39,5 +41,17 @@ public class ClassroomSnapMaterialResponse {
     @AllArgsConstructor
     public static class LessonVideoResponse {
         private UUID lessonVideoId;
+    }
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class LessonQuizResponse {
+
+        private UUID quizId;
+        private String title;
+        private String description;
+        private Integer durationMinutes;
+        private Integer passScore;
     }
 }
