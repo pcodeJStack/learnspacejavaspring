@@ -75,4 +75,10 @@ public class AuthenticationAPI {
                 authService.getAccounts(pageable, keyword, role)
         );
     }
+    @SecurityRequirement(name = "api")
+    @PostMapping("change-password")
+    public ResponseEntity<ChangePasswordResponse> changePassword(@Valid @RequestBody ChangePasswordRequest changePasswordRequest){
+            ChangePasswordResponse response = authService.changePassword(changePasswordRequest);
+            return ResponseEntity.ok(response);
+    }
 }

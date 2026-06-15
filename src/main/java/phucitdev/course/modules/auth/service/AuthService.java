@@ -14,4 +14,5 @@ public interface AuthService {
     void logoutOfSystem(LogoutRequest logoutRequest);
     BlockAccountResponse blockAccount(UUID accountId,  BlockAccountRequest request);
     Page<AccountResponse> getAccounts(Pageable pageable, String keyword, Role role);
+    ChangePasswordResponse changePassword(ChangePasswordRequest request);
 }

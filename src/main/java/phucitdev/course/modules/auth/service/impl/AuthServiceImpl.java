@@ -19,6 +19,7 @@ import phucitdev.course.modules.auth.repository.AuthRepository;
 import phucitdev.course.modules.auth.repository.RefreshTokenRepository;
 import phucitdev.course.modules.auth.security.CustomUserDetails;
 import phucitdev.course.modules.auth.security.JwtTokenProvider;
+import phucitdev.course.modules.auth.security.SecurityUtils;
 import phucitdev.course.modules.auth.service.AuthService;
 import phucitdev.course.modules.studentProfile.entity.StudentProfile;
 import phucitdev.course.modules.studentProfile.repository.StudentProfileRepository;
@@ -211,5 +212,20 @@ public class AuthServiceImpl implements AuthService {
                     "Lỗi khi lấy danh sách tài khoản"
             );
         }
+    }
+
+    @Override
+    public ChangePasswordResponse changePassword(ChangePasswordRequest request) {
+         Account account = SecurityUtils.getCurrentAccount();
+        // check confirm password
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new BadRequestException("Mật khẩu xác nhận không khớp");
+        }
+        // encode password
+        String encodedPassword = passwordEncoder.encode(request.getNewPassword());
+        // update password
+        account.setPassword(encodedPassword);
+        authRepository.save(account);
+        return new ChangePasswordResponse("Đổi mật khẩu thành công!");
     }
 }
