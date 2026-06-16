@@ -82,7 +82,6 @@ public class LessonQuizServiceImpl implements LessonQuizService {
                 }
             }
         }
-
         return new CreateLessonQuizResponse(
                 "Tạo đề thành công!"
         );
@@ -130,7 +129,6 @@ public class LessonQuizServiceImpl implements LessonQuizService {
                         .toList()
         );
     }
-
     @Override
     public SubmitQuizResponse submitQuiz(UUID snapLessonQuizId, SubmitQuizRequest request) {
         Account currentAccount = SecurityUtils.getCurrentAccount();
@@ -152,7 +150,6 @@ public class LessonQuizServiceImpl implements LessonQuizService {
                 a.getQuestionId() != null &&
                         (a.getSelectedOptionId() != null || (a.getEssayAnswer() != null && !a.getEssayAnswer().isBlank()))
         );
-
         if (!hasValidAnswer) {
             submission.setScore(0);
             submission.setPassed(false);
