@@ -157,6 +157,27 @@ public class LessonQuizServiceImpl implements LessonQuizService {
         submission.setStudent( currentAccount.getStudent());
         submission.setStatus( SubmissionStatus.PENDING );
         submission = studentQuizSubmissionRepository.save(submission);
+
+        List<StudentAnswerRequest> answers = request.getAnswers();
+
+        boolean hasValidAnswer = answers != null && answers.stream().anyMatch(a ->
+                a.getQuestionId() != null &&
+                        (a.getSelectedOptionId() != null || (a.getEssayAnswer() != null && !a.getEssayAnswer().isBlank()))
+        );
+
+        if (!hasValidAnswer) {
+            submission.setScore(0);
+            submission.setPassed(false);
+            submission.setStatus(SubmissionStatus.ABANDONED);
+
+            studentQuizSubmissionRepository.save(submission);
+
+            return new SubmitQuizResponse(
+                    "Bạn chưa trả lời câu hỏi nào",
+                    0,
+                    false
+            );
+        }
         int totalScore = 0;
         // chống submit trùng question
         Set<UUID> answeredQuestions = new HashSet<>();
