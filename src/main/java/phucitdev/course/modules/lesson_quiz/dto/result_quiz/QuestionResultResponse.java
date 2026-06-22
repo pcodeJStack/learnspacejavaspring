@@ -16,6 +16,7 @@ public class QuestionResultResponse {
     private String questionContent;
 
     private Integer points;
+    private Integer gradedPoints;
 
     private Boolean correct;
 

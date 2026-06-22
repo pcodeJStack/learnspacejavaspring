@@ -2,6 +2,7 @@ package phucitdev.course.modules.lesson_quiz.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import phucitdev.course.modules.lesson_quiz.entity.StudentQuizSubmission;
+import phucitdev.course.modules.lesson_quiz.entity.SubmissionStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,4 +20,5 @@ public interface StudentQuizSubmissionRepository extends JpaRepository<StudentQu
     );
     boolean  existsBySnapLessonQuizId(UUID snapLessonQuizId);
     boolean existsBySnapLessonQuiz_LessonQuiz_Id(UUID lessonQuizId);
+    List<StudentQuizSubmission> findBySnapLessonQuizIdAndStatus(UUID snapLessonQuizId, SubmissionStatus status);
 }

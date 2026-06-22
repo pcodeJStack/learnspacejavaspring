@@ -275,6 +275,7 @@ public class LessonQuizServiceImpl implements LessonQuizService {
                                         question.getId(),
                                         question.getContent(),
                                         question.getPoints(),
+                                        answer.getScore(),
                                         answer.getCorrect(),
 
                                         answer.getSelectedOption()
