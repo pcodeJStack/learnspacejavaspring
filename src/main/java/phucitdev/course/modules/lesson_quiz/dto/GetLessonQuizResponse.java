@@ -17,5 +17,6 @@ public class GetLessonQuizResponse {
     private Integer durationMinutes;
     private Integer passScore;
     private String quizType;
+    private Integer version;
     private List<QuestionResponse> questions;
 }

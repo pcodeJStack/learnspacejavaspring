@@ -9,6 +9,7 @@ import phucitdev.course.commo.exception.auth.BadRequestException;
 import phucitdev.course.commo.exception.classroom.NotFoundException;
 import phucitdev.course.commo.utils.LessonQuizCodeGenerator;
 import phucitdev.course.modules.auth.entity.Account;
+import phucitdev.course.modules.auth.entity.Role;
 import phucitdev.course.modules.auth.security.SecurityUtils;
 import phucitdev.course.modules.lesson_quiz.dto.*;
 import phucitdev.course.modules.lesson_quiz.dto.assignQuiz.*;
@@ -102,6 +103,8 @@ public class LessonQuizServiceImpl implements LessonQuizService {
     }
     @Override
     public GetLessonQuizResponse getQuizzes(UUID quizId) {
+        Account account = SecurityUtils.getCurrentAccount();
+        boolean isTeacher = account.getRole() == Role.TEACHER;
         LessonQuiz quiz = lessonQuizRepository.findById(quizId).orElseThrow(() ->
                                 new NotFoundException("Quiz không tồn tại")
                         );
@@ -113,7 +116,7 @@ public class LessonQuizServiceImpl implements LessonQuizService {
                 quiz.getDurationMinutes(),
                 quiz.getPassScore(),
                 quiz.getQuizType().name(),
-
+                quiz.getVersion(),
                 quiz.getQuestions()
                         .stream()
                         .map(question -> new QuestionResponse(
@@ -131,7 +134,7 @@ public class LessonQuizServiceImpl implements LessonQuizService {
                                                         new OptionResponse(
                                                                 option.getId(),
                                                                 option.getContent(),
-                                                                option.getCorrect()
+                                                                isTeacher ? option.getCorrect() : false
                                                         )
                                                 )
                                                 .toList()
@@ -426,6 +429,7 @@ public class LessonQuizServiceImpl implements LessonQuizService {
                 quiz.getDurationMinutes(),
                 quiz.getPassScore(),
                 quiz.getQuizType(),
+                quiz.getVersion(),
                 questions
         );
     }

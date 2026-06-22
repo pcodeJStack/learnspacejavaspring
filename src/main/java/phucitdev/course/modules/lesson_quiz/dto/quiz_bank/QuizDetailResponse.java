@@ -23,6 +23,6 @@ public class QuizDetailResponse {
     private Integer passScore;
 
     private QuizType quizType;
-
+    private Integer version;
     private List<QuestionDetailResponse> questions;
 }
