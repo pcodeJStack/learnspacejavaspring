@@ -14,15 +14,19 @@ import phucitdev.course.modules.lesson_quiz.dto.assignQuiz.AssignQuizRequest;
 import phucitdev.course.modules.lesson_quiz.dto.assignQuiz.AssignQuizResponse;
 import phucitdev.course.modules.lesson_quiz.dto.assignQuiz.UpdateAssignedQuizRequest;
 import phucitdev.course.modules.lesson_quiz.dto.assignQuiz.UpdateAssignedQuizResponse;
+import phucitdev.course.modules.lesson_quiz.dto.checking_lessonQuizCode.CheckingLessonQuizCodeRequest;
+import phucitdev.course.modules.lesson_quiz.dto.checking_lessonQuizCode.CheckingLessonQuizCodeResponse;
+import phucitdev.course.modules.lesson_quiz.dto.lesson_quiz.UpdateLessonQuizRequest;
+import phucitdev.course.modules.lesson_quiz.dto.lesson_quiz.UpdateLessonQuizResponse;
+import phucitdev.course.modules.lesson_quiz.dto.quiz_update.UpdateQuizQuestionRequest;
+import phucitdev.course.modules.lesson_quiz.dto.quiz_update.UpdateQuizQuestionResponse;
 import phucitdev.course.modules.lesson_quiz.dto.quiz_bank.QuizListResponse;
 import phucitdev.course.modules.lesson_quiz.dto.result_quiz.QuizResultResponse;
 import phucitdev.course.modules.lesson_quiz.dto.student_submit.SubmitQuizRequest;
 import phucitdev.course.modules.lesson_quiz.dto.student_submit.SubmitQuizResponse;
-import phucitdev.course.modules.lesson_quiz.entity.LessonQuiz;
 import phucitdev.course.modules.lesson_quiz.entity.QuizType;
 import phucitdev.course.modules.lesson_quiz.service.LessonQuizService;
 
-import java.util.List;
 import java.util.UUID;
 
 @CrossOrigin("*")
@@ -90,6 +94,11 @@ public class LessonQuizAPI {
         GetLessonQuizResponse response = lessonQuizService.getQuizzes(quizId);
         return ResponseEntity.ok(response);
     }
+    @PostMapping("/lesson-quiz/checkingLessonQuizCode/{quizId}")
+    public ResponseEntity<?> checkLessonQuizCode(@PathVariable UUID quizId, @Valid @RequestBody CheckingLessonQuizCodeRequest request) {
+        CheckingLessonQuizCodeResponse response = lessonQuizService.checkLesonQuizCode(quizId, request);
+        return ResponseEntity.ok(response);
+    }
     @PostMapping("/student/quizzes/{quizId}/submit")
     @PreAuthorize("hasRole('STUDENT')")
     public ResponseEntity<?> submitQuiz(
@@ -106,4 +115,16 @@ public class LessonQuizAPI {
         QuizResultResponse response = lessonQuizService.getQuizResult(quizId);
         return ResponseEntity.ok(response);
     }
+
+    @PutMapping("/lessonQuiz/{lessonQuizId}")
+    public ResponseEntity<?> updateQuiz(@PathVariable UUID lessonQuizId, @Valid @RequestBody UpdateLessonQuizRequest request){
+        UpdateLessonQuizResponse response =  lessonQuizService.updateLessonQuiz(lessonQuizId, request);
+        return ResponseEntity.ok(response);
+    }
+    @PutMapping("/{quizId}/questions")
+    public ResponseEntity<UpdateQuizQuestionResponse> updateQuestions(@PathVariable UUID quizId, @RequestBody @Valid UpdateQuizQuestionRequest request) {
+        System.out.println("updateQuestions");
+        return ResponseEntity.ok(lessonQuizService.updateQuestions(quizId, request));
+    }
+
 }

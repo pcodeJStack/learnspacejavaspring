@@ -11,9 +11,11 @@ public class QuizListResponse {
     private UUID id;
     private String title;
     private String description;
+    private String lessonQuizCode;
     private Integer durationMinutes;
     private Integer passScore;
     private QuizType quizType;
+    private Integer version;
     private Integer totalQuestions;
 }
 

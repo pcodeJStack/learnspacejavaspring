@@ -13,6 +13,7 @@ public class GetLessonQuizResponse {
     private UUID quizId;
     private String title;
     private String description;
+    private String lessonQuizCode;
     private Integer durationMinutes;
     private Integer passScore;
     private String quizType;

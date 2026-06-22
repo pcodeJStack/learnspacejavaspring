@@ -7,10 +7,18 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import phucitdev.course.commo.exception.auth.BadRequestException;
 import phucitdev.course.commo.exception.classroom.NotFoundException;
+import phucitdev.course.commo.utils.LessonQuizCodeGenerator;
 import phucitdev.course.modules.auth.entity.Account;
 import phucitdev.course.modules.auth.security.SecurityUtils;
 import phucitdev.course.modules.lesson_quiz.dto.*;
 import phucitdev.course.modules.lesson_quiz.dto.assignQuiz.*;
+import phucitdev.course.modules.lesson_quiz.dto.checking_lessonQuizCode.CheckingLessonQuizCodeRequest;
+import phucitdev.course.modules.lesson_quiz.dto.checking_lessonQuizCode.CheckingLessonQuizCodeResponse;
+import phucitdev.course.modules.lesson_quiz.dto.lesson_quiz.UpdateLessonQuizRequest;
+import phucitdev.course.modules.lesson_quiz.dto.lesson_quiz.UpdateLessonQuizResponse;
+import phucitdev.course.modules.lesson_quiz.dto.quiz_update.QuestionUpdateRequest;
+import phucitdev.course.modules.lesson_quiz.dto.quiz_update.UpdateQuizQuestionRequest;
+import phucitdev.course.modules.lesson_quiz.dto.quiz_update.UpdateQuizQuestionResponse;
 import phucitdev.course.modules.lesson_quiz.dto.quiz_bank.OptionDetailResponse;
 import phucitdev.course.modules.lesson_quiz.dto.quiz_bank.QuestionDetailResponse;
 import phucitdev.course.modules.lesson_quiz.dto.quiz_bank.QuizDetailResponse;
@@ -31,6 +39,9 @@ import phucitdev.course.modules.snap_lessonquiz.entity.SnapLessonQuiz;
 import phucitdev.course.modules.snap_lessonquiz.repository.SnapLessonQuizRepository;
 import phucitdev.course.modules.teacherProfile.entity.TeacherProfile;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 @Service
 public class LessonQuizServiceImpl implements LessonQuizService {
     @Autowired
@@ -47,6 +58,8 @@ public class LessonQuizServiceImpl implements LessonQuizService {
     StudentAnswerRepository studentAnswerRepository;
     @Autowired
     SnapLessonQuizRepository  snapLessonQuizRepository;
+    @Autowired
+    LessonQuizCodeGenerator lessonQuizCodeGenerator;
     @Override
     @Transactional
     public CreateLessonQuizResponse createQuiz(CreateLessonQuizRequest request) {
@@ -57,6 +70,7 @@ public class LessonQuizServiceImpl implements LessonQuizService {
         lessonQuiz.setTitle(request.getTitle());
         lessonQuiz.setDescription(request.getDescription());
         lessonQuiz.setDurationMinutes(request.getDurationMinutes());
+        lessonQuiz.setLessonQuizCode(lessonQuizCodeGenerator.generateUniqueCode());
         lessonQuiz.setPassScore(request.getPassScore());
         lessonQuiz.setQuizType(request.getQuizType());
         lessonQuiz.setTeacher(teacherProfile);
@@ -95,20 +109,17 @@ public class LessonQuizServiceImpl implements LessonQuizService {
                 quiz.getId(),
                 quiz.getTitle(),
                 quiz.getDescription(),
+                quiz.getLessonQuizCode(),
                 quiz.getDurationMinutes(),
                 quiz.getPassScore(),
                 quiz.getQuizType().name(),
 
                 quiz.getQuestions()
                         .stream()
-                        .map(question ->
-
-                                new QuestionResponse(
-
+                        .map(question -> new QuestionResponse(
                                         question.getId(),
                                         question.getContent(),
                                         question.getPoints(),
-
                                         // essay
                                         question.getEssayAnswer(),
 
@@ -464,6 +475,169 @@ public class LessonQuizServiceImpl implements LessonQuizService {
         mapping.setDisplayOrder(request.getDisplayOrder());
         snapLessonQuizRepository.save(mapping);
         return new UpdateAssignedQuizResponse("Cập nhật thành công!");
+    }
+
+    @Override
+    @Transactional
+    public UpdateLessonQuizResponse updateLessonQuiz(UUID lessonQuizId, UpdateLessonQuizRequest request) {
+        LessonQuiz lessonQuiz = lessonQuizRepository
+                .findById(lessonQuizId).orElseThrow(() -> new NotFoundException("lessonQuiz không tồn tại!"));
+        lessonQuiz.setTitle(request.getTitle());
+        lessonQuiz.setDescription(request.getDescription());
+        lessonQuiz.setDurationMinutes(request.getDurationMinutes());
+        lessonQuiz.setPassScore(request.getPassScore());
+        return new UpdateLessonQuizResponse("Cập nhật thành công!");
+    }
+
+    @Override
+    public CheckingLessonQuizCodeResponse checkLesonQuizCode(UUID quizId, CheckingLessonQuizCodeRequest request) {
+        LessonQuiz lessonQuiz = lessonQuizRepository
+                .findById(quizId).orElseThrow(() -> new NotFoundException("lessonQuiz không tồn tại!"));
+        boolean isValid = lessonQuiz.getLessonQuizCode()
+                .equalsIgnoreCase(request.getLessonQuizCode().trim());
+        if (!isValid) {
+            throw new BadRequestException("Mã quiz không chính xác!");
+        }
+        return new CheckingLessonQuizCodeResponse(
+                true,
+                "Xác thực mã quiz thành công!"
+        );
+    }
+
+    @Override
+    @Transactional
+    public UpdateQuizQuestionResponse updateQuestions(UUID quizId, UpdateQuizQuestionRequest request) {
+        System.out.println("service start");
+        LessonQuiz quiz = lessonQuizRepository.findDetail(quizId).orElseThrow(() ->
+                        new NotFoundException("Quiz không tồn tại"));
+        System.out.println("after find quiz");
+        boolean hasSubmission = studentQuizSubmissionRepository.existsBySnapLessonQuiz_LessonQuiz_Id(quizId);
+        System.out.println("hasSubmission = " + hasSubmission);
+        if (!hasSubmission) {
+            System.out.println("Submit nè");
+            updateQuestionSet(quiz, request);
+        }else {
+            LessonQuiz newQuiz = cloneQuiz(quiz);
+            createQuestionSet(newQuiz, request);
+        }
+        return new UpdateQuizQuestionResponse("Cập nhật thành công!");
+    }
+    private LessonQuiz cloneQuiz(LessonQuiz oldQuiz) {
+        LessonQuiz newQuiz = new LessonQuiz();
+
+        newQuiz.setTitle(oldQuiz.getTitle());
+        newQuiz.setDescription(oldQuiz.getDescription());
+        newQuiz.setDurationMinutes(oldQuiz.getDurationMinutes());
+        newQuiz.setPassScore(oldQuiz.getPassScore());
+        newQuiz.setLessonQuizCode(lessonQuizCodeGenerator.generateUniqueCode());
+        newQuiz.setQuizType(oldQuiz.getQuizType());
+        newQuiz.setTeacher(oldQuiz.getTeacher());
+        Integer version = oldQuiz.getVersion() == null ? 1 : oldQuiz.getVersion() + 1;
+        newQuiz.setVersion(version);
+        return lessonQuizRepository.save(newQuiz);
+    }
+    private void updateQuestionSet(LessonQuiz quiz, UpdateQuizQuestionRequest request) {
+        List<QuizQuestion> questions = quiz.getQuestions();
+        Map<UUID, QuizQuestion> questionMap =
+                quiz.getQuestions()
+                        .stream()
+                        .collect(Collectors.toMap(
+                                QuizQuestion::getId,
+                                Function.identity(),
+                                (oldValue, newValue) -> oldValue
+                        ));
+        for (QuestionUpdateRequest q : request.getQuestions()) {
+            if (q.getId() == null) {
+                QuizQuestion newQuestion = new QuizQuestion();
+                newQuestion.setQuiz(quiz);
+                newQuestion.setContent(q.getContent());
+                newQuestion.setPoints(q.getPoints());
+                newQuestion.setEssayAnswer(q.getEssayAnswer());
+                newQuestion = quizQuestionRepository.save(newQuestion);
+                if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
+                    saveOptions(newQuestion, q);
+                }
+
+                continue;
+            }
+            QuizQuestion existingQuestion = questionMap.get(q.getId());
+            System.out.println("existing question = " + existingQuestion);
+            if (existingQuestion == null) {
+                throw new NotFoundException(
+                        "Question không tồn tại: " + q.getId()
+                );
+            }
+            existingQuestion.setContent(q.getContent());
+            existingQuestion.setPoints(q.getPoints());
+            existingQuestion.setEssayAnswer(q.getEssayAnswer());
+
+            quizQuestionRepository.save(existingQuestion);
+            if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
+                updateOptions(existingQuestion, q);
+            }
+        }
+    }
+    private void createQuestionSet(
+            LessonQuiz quiz,
+            UpdateQuizQuestionRequest request
+    ) {
+        for (QuestionUpdateRequest q : request.getQuestions()) {
+            QuizQuestion question = new QuizQuestion();
+            question.setQuiz(quiz);
+            question.setContent(q.getContent());
+            question.setPoints(q.getPoints());
+            question.setEssayAnswer(q.getEssayAnswer());
+
+            question = quizQuestionRepository.save(question);
+
+            if (quiz.getQuizType() == QuizType.MULTIPLE_CHOICE) {
+                saveOptions(question, q);
+            }
+        }
+    }
+    private void saveOptions(QuizQuestion question, QuestionUpdateRequest questionRequest) {
+        if (questionRequest.getOptions() == null) {
+            return;
+        }
+
+        for (var optionRequest : questionRequest.getOptions()) {
+            QuestionOption option = new QuestionOption();
+            option.setQuestion(question);
+            option.setContent(optionRequest.getContent());
+            option.setCorrect(optionRequest.getCorrect());
+
+            questionOptionRepository.save(option);
+        }
+    }
+    private void updateOptions(QuizQuestion question, QuestionUpdateRequest request) {
+        if (request.getOptions() == null) {
+            return;
+        }
+        Map<UUID, QuestionOption> optionMap = question.getOptions()
+                        .stream()
+                        .collect(Collectors.toMap(
+                                QuestionOption::getId,
+                                Function.identity()
+                        ));
+        System.out.println("question id = " + question.getId());
+        System.out.println("option size = " + question.getOptions().size());
+        for (var optionRequest : request.getOptions()) {
+            if (optionRequest.getId() == null) {
+                QuestionOption option = new QuestionOption();
+                option.setQuestion(question);
+                option.setContent(optionRequest.getContent());
+                option.setCorrect(optionRequest.getCorrect());
+                questionOptionRepository.save(option);
+                continue;
+            }
+            QuestionOption existingOption = optionMap.get(optionRequest.getId());
+            if (existingOption == null) {
+                throw new NotFoundException("Option không tồn tại");
+            }
+            existingOption.setContent(optionRequest.getContent());
+            existingOption.setCorrect(optionRequest.getCorrect());
+            questionOptionRepository.save(existingOption);
+        }
     }
 
 

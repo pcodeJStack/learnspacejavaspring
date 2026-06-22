@@ -17,4 +17,6 @@ public interface StudentQuizSubmissionRepository extends JpaRepository<StudentQu
             UUID snapLessonQuizId,
             UUID studentId
     );
+    boolean  existsBySnapLessonQuizId(UUID snapLessonQuizId);
+    boolean existsBySnapLessonQuiz_LessonQuiz_Id(UUID lessonQuizId);
 }

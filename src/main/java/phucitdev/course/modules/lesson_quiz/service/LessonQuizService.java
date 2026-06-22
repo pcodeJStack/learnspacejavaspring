@@ -5,6 +5,12 @@ import phucitdev.course.modules.lesson_quiz.dto.CreateLessonQuizRequest;
 import phucitdev.course.modules.lesson_quiz.dto.CreateLessonQuizResponse;
 import phucitdev.course.modules.lesson_quiz.dto.GetLessonQuizResponse;
 import phucitdev.course.modules.lesson_quiz.dto.assignQuiz.*;
+import phucitdev.course.modules.lesson_quiz.dto.checking_lessonQuizCode.CheckingLessonQuizCodeRequest;
+import phucitdev.course.modules.lesson_quiz.dto.checking_lessonQuizCode.CheckingLessonQuizCodeResponse;
+import phucitdev.course.modules.lesson_quiz.dto.lesson_quiz.UpdateLessonQuizRequest;
+import phucitdev.course.modules.lesson_quiz.dto.lesson_quiz.UpdateLessonQuizResponse;
+import phucitdev.course.modules.lesson_quiz.dto.quiz_update.UpdateQuizQuestionRequest;
+import phucitdev.course.modules.lesson_quiz.dto.quiz_update.UpdateQuizQuestionResponse;
 import phucitdev.course.modules.lesson_quiz.dto.quiz_bank.QuizDetailResponse;
 import phucitdev.course.modules.lesson_quiz.dto.quiz_bank.QuizListResponse;
 import phucitdev.course.modules.lesson_quiz.dto.result_quiz.QuizResultResponse;
@@ -25,4 +31,7 @@ public interface LessonQuizService {
     List<LessonAssignedQuizResponse> getAssignedQuizzes(UUID snapLessonId);
     QuizDetailResponse getQuizDetail(UUID quizId);
     UpdateAssignedQuizResponse updateAssignedQuiz(UUID snapLessonQuizId, UpdateAssignedQuizRequest request);
+    UpdateLessonQuizResponse updateLessonQuiz(UUID lessonQuizId, UpdateLessonQuizRequest request);
+    CheckingLessonQuizCodeResponse checkLesonQuizCode(UUID quizId, CheckingLessonQuizCodeRequest request);
+    UpdateQuizQuestionResponse updateQuestions(UUID quizId, UpdateQuizQuestionRequest request);
 }
