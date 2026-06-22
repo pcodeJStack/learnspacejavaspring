@@ -41,4 +41,5 @@ public class StudentQuizSubmission extends BaseEntity {
 
     @OneToMany(mappedBy = "submission", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<StudentAnswer> answers = new ArrayList<>();
+
 }
